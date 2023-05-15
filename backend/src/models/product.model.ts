@@ -8,10 +8,10 @@ export default class ProductModel {
   }
 
   async getAllProductsCode(): Promise<number[]> {
-    const [[{ codesArray }]] =  await this.connection.execute<any>(
+    const [[{ codes }]] =  await this.connection.execute<any>(
       'SELECT JSON_ARRAYAGG(code) AS codes FROM shopperDB.products'
     );
 
-    return codesArray;
+    return codes;
   }
 }
