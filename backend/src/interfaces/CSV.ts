@@ -1,5 +1,5 @@
 export default interface CSV {
   code: number;
-  price: number;
+  newPrice: string;
   message?: string;
 }
