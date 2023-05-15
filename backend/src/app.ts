@@ -1,5 +1,6 @@
 import * as express from 'express';
 import ProductController from './controllers/product.controller';
+const cors = require('cors');
 
 export default class App {
   public app: express.Express;
@@ -8,10 +9,11 @@ export default class App {
   constructor() {
     this.app = express();
     this.app.use(express.json());
+    this.app.use(cors());
 
     this.productController = new ProductController();
 
-    this.app.get('/validate', this.productController.validateProducts);
+    this.app.post('/validate', this.productController.validateProducts);
   }
 
   public start(PORT: string | number): void {

@@ -1,5 +1,6 @@
-import { Pool, RowDataPacket } from 'mysql2/promise';
+import { Pool, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import Product from '../interfaces/Product';
+import ValidatedProduct from '../interfaces/ValidatedProduct';
 
 export default class ProductModel {
   private connection: Pool;
@@ -57,5 +58,18 @@ export default class ProductModel {
     );
 
     return packIds as number[];
+  }
+
+  // atualiza o preço na tabela de produtos
+  async updatePrices(product: ValidatedProduct) {
+    const { code, salesPrice } = product;
+    const [{ affectedRows }] =  await this.connection.execute<ResultSetHeader>(
+      `UPDATE shopperDB.products
+        SET sales_price = ?
+        WHERE code = ?`,
+        [code, salesPrice],
+    );
+
+    return affectedRows;
   }
 }
