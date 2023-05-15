@@ -7,15 +7,11 @@ export default class ProductModel {
     this.connection = connection;
   }
 
-  async getAll() {
-    try {
-      const [products] =  await this.connection.execute(
-        'SELECT * FROM shopperDB.products'
-      );
-      
-      return products;
-    } catch(err: any) {
-      return err.message;
-    }
+  async getAllProductsCode(): Promise<number[]> {
+    const [[{ codesArray }]] =  await this.connection.execute<any>(
+      'SELECT JSON_ARRAYAGG(code) AS codes FROM shopperDB.products'
+    );
+
+    return codesArray;
   }
 }

@@ -6,11 +6,12 @@ export default class ProductController {
 
   constructor() {
     this.service = new ProductService();
-    this.getAll = this.getAll.bind(this);
+    this.validateProducts = this.validateProducts.bind(this);
   }
 
-  async getAll(_req: Request, res: Response) {
-    const products = await this.service.getAll();
-    res.status(200).json(products);
+  async validateProducts(req: Request, res: Response) {
+    const csvValues = req.body;
+    const productsTable = await this.service.validateProducts(csvValues);
+    res.status(200).json(productsTable);
   }
 }

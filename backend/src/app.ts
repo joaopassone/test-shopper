@@ -11,7 +11,7 @@ export default class App {
 
     this.productController = new ProductController();
 
-    this.app.get('/', this.productController.getAll);
+    this.app.get('/validate', this.productController.validateProducts);
   }
 
   public start(PORT: string | number): void {
