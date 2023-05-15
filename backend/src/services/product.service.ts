@@ -127,13 +127,27 @@ export default class ProductService {
       });
   }
 
-  // verifica se há atualização do valor dos produtos do pack ao atualizar o valor do pack
+  private async getPackIdsFromProduct(product: ValidatedProduct) {
+    const packIds = await this.model.getPacksFromProduct(product.code!);
+    return packIds || [];
+  }
+
+  // verifica se a atualização de valor de packs e produtos de packs não quebram a regra de negócio
   private async packProductsUpdate(productsArray: ValidatedProduct[]) {
     const packIds = await this.getAllPackIds();
     const priceAdjustments = this.getPriceAdjustments(productsArray);
+    const productsCodes = productsArray.map(({ code }) => code);
 
     const packsValidation = await Promise.all(productsArray.map(async (product) => {
       const { message, code } = product;
+      
+      if (!message && !packIds.includes(code!)) {
+        const productPackIds = await this.getPackIdsFromProduct(product);
+        const isPackUpdated = productPackIds.every((pack) => productsCodes.includes(pack));
+        if (!isPackUpdated) {
+          return ({ ...product, message: 'Os packs que possuem este produto precisam ser atualizados também' });
+        }
+      }
 
       if (!message && packIds.includes(code!)) {
         const packProducts = await this.getPackProductsByPackId(code!);

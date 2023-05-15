@@ -38,7 +38,7 @@ export default class ProductModel {
 
     return packIds;
   }
-  // retorna todos os produtos de 
+  // retorna todos os produtos de um pack
   async getPackProductsByPackId(id: number) {
     const [packProducts] =  await this.connection.execute<RowDataPacket[]>(
       'SELECT product_id AS code, qty FROM shopperDB.packs WHERE pack_id = ?',
@@ -46,5 +46,16 @@ export default class ProductModel {
     );
 
     return packProducts;
+  }
+
+  // retorna os packs que possuem determinado produto
+  async getPacksFromProduct(code: number) {
+    const [[{ packIds }]] =  await this.connection.execute<RowDataPacket[]>(
+      `SELECT JSON_ARRAYAGG(pack_id) AS packIds FROM
+        (SELECT DISTINCT pack_id FROM shopperDB.packs WHERE product_id = ?) AS ids`,
+        [code],
+    );
+
+    return packIds as number[];
   }
 }
