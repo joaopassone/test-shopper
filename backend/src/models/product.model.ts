@@ -9,7 +9,7 @@ export default class ProductModel {
   }
 
   // retorna um array com os códigos de produtos do banco de dados
-  async getAllProductsCode(): Promise<number[]> {
+  async getAllProductCodes(): Promise<number[]> {
     const [[{ codes }]] =  await this.connection.execute<RowDataPacket[]>(
       'SELECT JSON_ARRAYAGG(code) AS codes FROM shopperDB.products'
     );
@@ -27,5 +27,24 @@ export default class ProductModel {
     );
 
     return product as Product;
+  }
+
+  // retorna um array com todos os ids dos packs
+  async getAllPackIds(): Promise<number[]> {
+    const [[{ packIds }]] =  await this.connection.execute<RowDataPacket[]>(
+      `SELECT JSON_ARRAYAGG(pack_id) AS packIds FROM
+        (SELECT DISTINCT pack_id FROM shopperDB.packs) AS ids`
+    );
+
+    return packIds;
+  }
+  // retorna todos os produtos de 
+  async getPackProductsByPackId(id: number) {
+    const [packProducts] =  await this.connection.execute<RowDataPacket[]>(
+      'SELECT product_id AS code, qty FROM shopperDB.packs WHERE pack_id = ?',
+      [id],
+    );
+
+    return packProducts;
   }
 }

@@ -10,12 +10,20 @@ export default class ProductService {
     this.model = new ProductModel(connection);
   }
 
-  private async getAllProductsCode() {
-    return this.model.getAllProductsCode();
+  private async getAllProductCodes() {
+    return this.model.getAllProductCodes();
   }
 
   private async getProductByCode(code: number) {
     return this.model.getProductByCode(code);
+  }
+
+  private async getAllPackIds() {
+    return this.model.getAllPackIds();
+  }
+
+  private async getPackProductsByPackId(id: number) {
+    return this.model.getPackProductsByPackId(id);
   }
 
   // valida os valores do arquivo .csv
@@ -42,7 +50,7 @@ export default class ProductService {
   // verifica se existe o código do produto
   private async doesCodeExist(productEntry: CSV): Promise<CSV> {
     const { code, message } = productEntry;
-    const codesArray = await this.getAllProductsCode();
+    const codesArray = await this.getAllProductCodes();
 
     if (message || codesArray.includes(+code)) return productEntry;
     
@@ -72,7 +80,7 @@ export default class ProductService {
   }
 
   // valida os requisitos da seção CENÁRIO
-  private validateScenario(productsArray: ValidatedProduct[]) {
+  private async validateScenario(productsArray: ValidatedProduct[]) {
     const financialCheckedProducts = productsArray.map((product) => {
       const { message } = product;
       if (!message) return this.isBellowCost(product);
@@ -84,7 +92,7 @@ export default class ProductService {
       return product;
     });
 
-    return marketingCheckedProducts;
+    return this.packProductsUpdate(marketingCheckedProducts);
   }
 
   // verifica se o novo valor está abaixo do preço de custo
@@ -107,5 +115,50 @@ export default class ProductService {
     }
 
     return product;
+  }
+
+  // calcula a diferença no reajuste dos preços
+  private getPriceAdjustments(productsArray: ValidatedProduct[]) {
+    return productsArray
+      .filter((product) => !product.message)
+      .map((product) => {
+        const { code, newPrice, salesPrice } = product;
+        return ({ code, priceDifference: (+newPrice! - salesPrice!).toFixed(2) });
+      });
+  }
+
+  // verifica se há atualização do valor dos produtos do pack ao atualizar o valor do pack
+  private async packProductsUpdate(productsArray: ValidatedProduct[]) {
+    const packIds = await this.getAllPackIds();
+    const priceAdjustments = this.getPriceAdjustments(productsArray);
+
+    const packsValidation = await Promise.all(productsArray.map(async (product) => {
+      const { message, code } = product;
+
+      if (!message && packIds.includes(code!)) {
+        const packProducts = await this.getPackProductsByPackId(code!);
+
+        const packAdjustment = priceAdjustments
+        .find((adjustment) => adjustment?.code === code)
+        ?.priceDifference || 0;
+
+        const packProductsAdjustments = packProducts.map((product) => {
+          const adjustment = priceAdjustments.find((adjustment) => adjustment?.code === product.code);
+          if (adjustment) return product.qty * +adjustment.priceDifference;
+          return 0;
+        });
+
+        const totalPackProductsAdjustments = packProductsAdjustments.reduce((acc, adjustment) => {
+          return acc + adjustment;
+        }, 0);
+
+        const isPackAdjustmentValid = (+packAdjustment - totalPackProductsAdjustments) === 0;
+        if (!isPackAdjustmentValid) return ({ ...product, message: 'O valor do pack precisa ser igual a soma do valor dos seus produtos' });
+      }
+      
+      return product; 
+    }));
+    
+    return packsValidation;
   }
 }
