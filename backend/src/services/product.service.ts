@@ -71,21 +71,39 @@ export default class ProductService {
     return this.validateScenario(productsArray);
   }
 
+  // valida os requisitos da seção CENÁRIO
   private validateScenario(productsArray: ValidatedProduct[]) {
-    const costCheckedProducts = productsArray.map((product) => {
+    const financialCheckedProducts = productsArray.map((product) => {
       const { message } = product;
       if (!message) return this.isBellowCost(product);
       return product;
     });
+    const marketingCheckedProducts = financialCheckedProducts.map((product) => {
+      const { message } = product;
+      if (!message) return this.readjustmentCheck(product);
+      return product;
+    });
 
-    return costCheckedProducts;
+    return marketingCheckedProducts;
   }
 
+  // verifica se o novo valor está abaixo do preço de custo
   private isBellowCost(product: ValidatedProduct) {
     const { newPrice, costPrice } = product;
 
     if (newPrice && costPrice && +newPrice < costPrice) {
       return ({ ...product, message: 'O novo valor está abaixo do valor de custo' });
+    }
+
+    return product;
+  }
+
+  // verifica se o reajuste está dentro dos 10%
+  private readjustmentCheck(product: ValidatedProduct) {
+    const { newPrice, salesPrice } = product;
+
+    if (newPrice && salesPrice && +Math.abs(+newPrice - salesPrice).toFixed(2) > +(0.1 * salesPrice).toFixed(2)) {
+      return ({ ...product, message: 'O novo valor ultrapassa a margem de 10% de ajuste' });
     }
 
     return product;
