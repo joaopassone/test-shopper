@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "start": "npm run backend && npm run frontend",
+    "backend": "cd backend && docker-compose up --build -d",
+    "frontend": "cd frontend/shopper && npm start"
+  }
+}

@@ -26,6 +26,10 @@ export default class ProductService {
     return this.model.getPackProductsByPackId(id);
   }
 
+  public async updatePrice(data: ValidatedProduct) {
+    return this.model.updatePrice(data);
+  }
+
   // valida os valores do arquivo .csv
   async validateProducts(productEntries: CSV[]) {
     const fieldCheckedValues = productEntries.map((value) => this.hasAllFields(value));

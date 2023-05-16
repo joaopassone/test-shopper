@@ -61,13 +61,13 @@ export default class ProductModel {
   }
 
   // atualiza o preço na tabela de produtos
-  async updatePrices(product: ValidatedProduct) {
-    const { code, salesPrice } = product;
+  async updatePrice(product: ValidatedProduct) {
+    const { code, newPrice } = product;
     const [{ affectedRows }] =  await this.connection.execute<ResultSetHeader>(
       `UPDATE shopperDB.products
         SET sales_price = ?
         WHERE code = ?`,
-        [code, salesPrice],
+        [newPrice, code],
     );
 
     return affectedRows;

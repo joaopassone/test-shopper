@@ -1,0 +1,35 @@
+version: '3.9'
+
+services:
+  backend:
+    container_name: backend
+    build: ./backend
+    ports:
+      - 8000:8000
+    working_dir: /backend
+    depends_on:
+      - db
+    environment:
+      - PORT=8000
+      - MYSQL_HOSTNAME=db
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_DATABASE=shopperDB
+      - MYSQL_PORT=3306
+    restart: 'always'
+
+  db:
+    container_name: shopperDB
+    build: ./backend/src/database
+    working_dir: /
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: shopperDB
+    restart: 'always'
+    volumes:
+      - db_volume:/var/lib/mysql
+
+volumes:
+  db_volume:

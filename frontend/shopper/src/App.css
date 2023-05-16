@@ -1,0 +1,23 @@
+* {
+  text-align: center;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  max-width: fit-content;
+  margin-top: 20px;
+}
+
+.button-div {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+table {
+  width: 100%;
+}

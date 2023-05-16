@@ -14,6 +14,7 @@ export default class App {
     this.productController = new ProductController();
 
     this.app.post('/validate', this.productController.validateProducts);
+    this.app.post('/update', this.productController.updatePrice);
   }
 
   public start(PORT: string | number): void {
